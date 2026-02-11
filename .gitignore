@@ -1,0 +1,9 @@
+# Ephemeral publication files (do not commit)
+Pub.*.toml
+
+# Build output
+build/
+
+node_modules/
+dist/
+.env
