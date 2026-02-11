@@ -125,6 +125,19 @@ sui move test
 - `reputation_system_tests.move`：create_agent_reputation、add_rating、get_reputation_stats，以及无效评分 (0/11) 的 expected_failure
 - `validation_system_tests.move`：init_stake_pool、create_agent_validation、is_validated
 
+## EIP-8004 协议演示 (Demo)
+
+在 `demo/` 目录下提供了基于 TypeScript + Sui SDK 的**简单演示脚本**，用于在 Devnet 上跑通协议流程：初始化注册表与质押池、创建 Agent NFT、创建声誉、添加评分等。
+
+```bash
+cd demo
+cp .env.example .env   # 填写 PACKAGE_ID 等
+npm install
+npm run demo
+```
+
+详见 [demo/README.md](demo/README.md)。
+
 ## Deployment
 
 ### 1. Publish Package
