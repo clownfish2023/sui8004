@@ -119,6 +119,12 @@ sui move build
 sui move test
 ```
 
+单元测试位于 `tests/` 目录：
+- `agent_nft_tests.move`：创建/更新/转移 Agent NFT、get_agent_info、is_owner
+- `agent_registry_tests.move`：init_registry、get_registry_stats
+- `reputation_system_tests.move`：create_agent_reputation、add_rating、get_reputation_stats，以及无效评分 (0/11) 的 expected_failure
+- `validation_system_tests.move`：init_stake_pool、create_agent_validation、is_validated
+
 ## Deployment
 
 ### 1. Publish Package

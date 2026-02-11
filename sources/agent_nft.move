@@ -81,7 +81,7 @@ module trustless_agents::agent_nft {
         transfer::public_transfer(agent, tx_context::sender(ctx));
     }
 
-    /// Transfer Agent NFT
+    /// Transfer Agent NFT (object ownership moves to `to`; .owner field is not updated for UID rules)
     public entry fun transfer_agent(
         agent: AgentNFT,
         to: address,
@@ -90,7 +90,6 @@ module trustless_agents::agent_nft {
         let agent_id = agent.agent_id;
         let from = tx_context::sender(ctx);
 
-        // Emit transfer event
         event::emit(AgentTransferred {
             agent_id,
             from,
