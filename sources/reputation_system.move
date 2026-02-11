@@ -6,6 +6,12 @@ module trustless_agents::reputation_system {
     use sui::event;
     use sui::dynamic_field;
 
+    /// Category name + score (Move does not allow vector of tuples in storage)
+    public struct CategoryScore has copy, drop, store {
+        category_name: String,
+        score: u64,
+    }
+
     /// Rating
     public struct Rating has copy, drop, store {
         /// Reviewer address
@@ -34,7 +40,7 @@ module trustless_agents::reputation_system {
         /// Average score (precise to 2 decimal places, stored as u64: e.g., 950 represents 9.50)
         average_score: u64,
         /// Average scores for each category
-        category_scores: vector<(String, u64)>,
+        category_scores: vector<CategoryScore>,
         /// Rating history (stores up to 100 most recent ratings)
         ratings_history: vector<Rating>,
         /// Version number
@@ -72,7 +78,7 @@ module trustless_agents::reputation_system {
             total_ratings: 0,
             total_score: 0,
             average_score: 0,
-            category_scores: vector::empty<(String, u64)>(),
+            category_scores: vector::empty<CategoryScore>(),
             ratings_history: vector::empty<Rating>(),
             version: 1,
         };
@@ -201,51 +207,61 @@ module trustless_agents::reputation_system {
         (reputation.average_score / 100, reputation.average_score % 100)
     }
 
-    /// Get category scores
-    public fun get_category_scores(reputation: &AgentReputation): vector<(String, u64)> {
-        reputation.category_scores
+    /// Get category scores (returns copy)
+    public fun get_category_scores(reputation: &AgentReputation): vector<CategoryScore> {
+        let mut result = vector::empty<CategoryScore>();
+        let mut i = 0;
+        let len = vector::length(&reputation.category_scores);
+        while (i < len) {
+            vector::push_back(&mut result, *vector::borrow(&reputation.category_scores, i));
+            i = i + 1;
+        };
+        result
     }
 
     /// Get average score for a specific category
     public fun get_category_score(reputation: &AgentReputation, category: String): Option<u64> {
-        let i = 0;
+        let mut i = 0;
         let len = vector::length(&reputation.category_scores);
         while (i < len) {
-            let (cat_name, score) = *vector::borrow(&reputation.category_scores, i);
-            if (cat_name == category) {
-                return option::some(score)
+            let cs = vector::borrow(&reputation.category_scores, i);
+            if (cs.category_name == category) {
+                return option::some(cs.score)
             };
             i = i + 1;
         };
         option::none()
     }
 
-    /// Get rating history
+    /// Get rating history (returns copy)
     public fun get_ratings_history(reputation: &AgentReputation): vector<Rating> {
-        reputation.ratings_history
+        let mut result = vector::empty<Rating>();
+        let mut i = 0;
+        let len = vector::length(&reputation.ratings_history);
+        while (i < len) {
+            vector::push_back(&mut result, *vector::borrow(&reputation.ratings_history, i));
+            i = i + 1;
+        };
+        result
     }
 
-    /// Get most recent N ratings
+    /// Get most recent N ratings (returns copy)
     public fun get_recent_ratings(reputation: &AgentReputation, count: u64): vector<Rating> {
         let len = vector::length(&reputation.ratings_history);
-        if (count >= len) {
-            reputation.ratings_history
-        } else {
-            let start = len - count;
-            let mut result = vector::empty<Rating>();
-            let mut i = start;
-            while (i < len) {
-                vector::push_back(&mut result, *vector::borrow(&reputation.ratings_history, i));
-                i = i + 1;
-            };
-            result
-        }
+        let mut result = vector::empty<Rating>();
+        let start = if (count >= len) { 0 } else { len - count };
+        let mut i = start;
+        while (i < len) {
+            vector::push_back(&mut result, *vector::borrow(&reputation.ratings_history, i));
+            i = i + 1;
+        };
+        result
     }
 
     /// Get ratings from a specific reviewer
     public fun get_reviewer_ratings(reputation: &AgentReputation, reviewer: address): vector<Rating> {
         let mut result = vector::empty<Rating>();
-        let i = 0;
+        let mut i = 0;
         let len = vector::length(&reputation.ratings_history);
         while (i < len) {
             let rating = *vector::borrow(&reputation.ratings_history, i);
@@ -259,20 +275,18 @@ module trustless_agents::reputation_system {
 
     /// Helper function: update category score
     fun update_category_score(
-        category_scores: &mut vector<(String, u64)>,
+        category_scores: &mut vector<CategoryScore>,
         category: String,
         score: u8
     ) {
-        let i = 0;
+        let mut i = 0;
         let len = vector::length(category_scores);
         let mut found = false;
 
         while (i < len) {
-            let (cat_name, cat_score) = vector::borrow_mut(category_scores, i);
-            if (cat_name == category) {
-                // Simple average: update to new score
-        // In production, should calculate the average of all ratings in this category
-                *cat_score = score as u64;
+            let cs = vector::borrow_mut(category_scores, i);
+            if (cs.category_name == category) {
+                cs.score = score as u64;
                 found = true;
                 break
             };
@@ -280,7 +294,7 @@ module trustless_agents::reputation_system {
         };
 
         if (!found) {
-            vector::push_back(category_scores, (category, score as u64));
+            vector::push_back(category_scores, CategoryScore { category_name: category, score: (score as u64) });
         }
     }
 }

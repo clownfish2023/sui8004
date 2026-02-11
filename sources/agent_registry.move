@@ -1,5 +1,5 @@
 module trustless_agents::agent_registry {
-    use std::string::{String, utf8};
+    use std::string::{String, utf8, length, substring};
     use std::option::{Self, Option};
     use sui::object::{Self, UID};
     use sui::tx_context::TxContext;
@@ -100,8 +100,8 @@ module trustless_agents::agent_registry {
         transfer::share_object(registry);
     }
 
-    /// Register agent
-    public entry fun register_agent(
+    /// Register agent (public for PTB; entry disallowed due to vector<Capability>/Endpoint/TrustModel params)
+    public fun register_agent(
         registry: &mut Registry,
         agent_nft_id: address,
         capabilities: vector<Capability>,
@@ -142,8 +142,8 @@ module trustless_agents::agent_registry {
         transfer::share_object(registration);
     }
 
-    /// Update agent registration information
-    public entry fun update_registration(
+    /// Update agent registration information (public for PTB; entry disallowed due to Option<vector<...>> params)
+    public fun update_registration(
         registry: &mut AgentRegistration,
         capabilities: Option<vector<Capability>>,
         endpoints: Option<vector<Endpoint>>,
@@ -162,13 +162,13 @@ module trustless_agents::agent_registry {
         };
 
         if (option::is_some(&endpoints)) {
-            registration.endpoints = option::destroy_some(endpoints);
+            registry.endpoints = option::destroy_some(endpoints);
         } else {
             option::destroy_none(endpoints);
         };
 
         if (option::is_some(&ens_name)) {
-            registry.ens_name = option::destroy_some(ens_name);
+            registry.ens_name = option::some(option::destroy_some(ens_name));
         } else {
             option::destroy_none(ens_name);
         };
@@ -195,18 +195,39 @@ module trustless_agents::agent_registry {
         });
     }
 
-    /// Get registration information
+    /// Get registration information (returns copies; cannot move out of &registry)
     public fun get_registration_info(
         registry: &AgentRegistration
     ): (address, vector<Capability>, vector<Endpoint>, Option<String>, address, TrustModel, String, u64) {
+        let mut capabilities_copy = vector::empty<Capability>();
+        let mut i = 0;
+        let cap_len = vector::length(&registry.capabilities);
+        while (i < cap_len) {
+            vector::push_back(&mut capabilities_copy, *vector::borrow(&registry.capabilities, i));
+            i = i + 1;
+        };
+        let mut endpoints_copy = vector::empty<Endpoint>();
+        i = 0;
+        let end_len = vector::length(&registry.endpoints);
+        while (i < end_len) {
+            vector::push_back(&mut endpoints_copy, *vector::borrow(&registry.endpoints, i));
+            i = i + 1;
+        };
+        let ens_name_copy = if (option::is_some(&registry.ens_name)) {
+            let s = option::borrow(&registry.ens_name);
+            option::some(substring(s, 0, length(s)))
+        } else {
+            option::none()
+        };
+        let metadata_hash_copy = substring(&registry.metadata_hash, 0, length(&registry.metadata_hash));
         (
             registry.agent_nft_id,
-            registry.capabilities,
-            registry.endpoints,
-            registry.ens_name,
+            capabilities_copy,
+            endpoints_copy,
+            ens_name_copy,
             registry.wallet_address,
             registry.trust_model,
-            registry.metadata_hash,
+            metadata_hash_copy,
             registry.version,
         )
     }
@@ -218,7 +239,7 @@ module trustless_agents::agent_registry {
 
     /// Check if agent supports a specific capability
     public fun has_capability(registry: &AgentRegistration, capability_name: String): bool {
-        let i = 0;
+        let mut i = 0;
         let len = vector::length(&registry.capabilities);
         while (i < len) {
             let cap = vector::borrow(&registry.capabilities, i);
@@ -232,12 +253,12 @@ module trustless_agents::agent_registry {
 
     /// Get all capability names
     public fun get_capability_names(registry: &AgentRegistration): vector<String> {
-        let i = 0;
+        let mut i = 0;
         let len = vector::length(&registry.capabilities);
-        let names = vector::empty<String>();
+        let mut names = vector::empty<String>();
         while (i < len) {
             let cap = vector::borrow(&registry.capabilities, i);
-            vector::push_back(&mut names, cap.name);
+            vector::push_back(&mut names, substring(&cap.name, 0, length(&cap.name)));
             i = i + 1;
         };
         names
@@ -245,12 +266,12 @@ module trustless_agents::agent_registry {
 
     /// Get all endpoint URLs
     public fun get_endpoint_urls(registry: &AgentRegistration): vector<String> {
-        let i = 0;
+        let mut i = 0;
         let len = vector::length(&registry.endpoints);
-        let urls = vector::empty<String>();
+        let mut urls = vector::empty<String>();
         while (i < len) {
             let endpoint = vector::borrow(&registry.endpoints, i);
-            vector::push_back(&mut urls, endpoint.url);
+            vector::push_back(&mut urls, substring(&endpoint.url, 0, length(&endpoint.url)));
             i = i + 1;
         };
         urls
@@ -258,9 +279,9 @@ module trustless_agents::agent_registry {
 
     /// Get endpoints by protocol type
     public fun get_endpoints_by_protocol(registry: &AgentRegistration, protocol: String): vector<Endpoint> {
-        let i = 0;
+        let mut i = 0;
         let len = vector::length(&registry.endpoints);
-        let result = vector::empty<Endpoint>();
+        let mut result = vector::empty<Endpoint>();
         while (i < len) {
             let endpoint = vector::borrow(&registry.endpoints, i);
             if (endpoint.protocol == protocol) {

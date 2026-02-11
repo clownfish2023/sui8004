@@ -5,6 +5,7 @@ module trustless_agents::agent_nft {
     use sui::tx_context::TxContext;
     use sui::display::{Self, Display};
     use sui::event;
+    use sui::package::Publisher;
 
     /// Agent NFT - Represents an AI agent
     public struct AgentNFT has key, store {
@@ -161,24 +162,23 @@ module trustless_agents::agent_nft {
         agent.owner == addr
     }
 
-    /// Create Display for NFT display
-    public fun create_display(kiosk_creator: address, ctx: &mut TxContext): Display<AgentNFT> {
-        let mut display = display::new_with_fields<AgentNFT>(
+    /// Create Display for NFT display (requires &Publisher from package publish)
+    public fun create_display(pub: &Publisher, ctx: &mut TxContext): Display<AgentNFT> {
+        display::new_with_fields<AgentNFT>(
+            pub,
             vector[
-                display::key<AgentNFT>(utf8(b"name")),
-                display::key<AgentNFT>(utf8(b"description")),
-                display::key<AgentNFT>(utf8(b"image_url")),
-                display::key<AgentNFT>(utf8(b"link")),
+                utf8(b"name"),
+                utf8(b"description"),
+                utf8(b"image_url"),
+                utf8(b"link"),
             ],
-            kiosk_creator,
+            vector[
+                utf8(b"{name}"),
+                utf8(b"{description}"),
+                utf8(b"{image_url}"),
+                utf8(b"https://trustless-agents.sui/agent/{agent_id}"),
+            ],
             ctx
-        );
-
-        display::add(&mut display, utf8(b"name"), utf8(b"{name}"));
-        display::add(&mut display, utf8(b"description"), utf8(b"{description}"));
-        display::add(&mut display, utf8(b"image_url"), utf8(b"{image_url}"));
-        display::add(&mut display, utf8(b"link"), utf8(b"https://trustless-agents.sui/agent/{agent_id}"));
-
-        display
+        )
     }
 }

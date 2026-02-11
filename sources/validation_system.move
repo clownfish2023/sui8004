@@ -371,7 +371,7 @@ module trustless_agents::validation_system {
 
     /// Helper function: check if string exists in vector
     fun contains(vec: &vector<String>, item: String): bool {
-        let i = 0;
+        let mut i = 0;
         let len = vector::length(vec);
         while (i < len) {
             if (*vector::borrow(vec, i) == item) {
@@ -382,16 +382,20 @@ module trustless_agents::validation_system {
         false
     }
 
-    /// Helper function: remove string from vector
+    /// Helper function: remove string from vector (find index first to avoid borrow conflict)
     fun remove_validation_type(vec: &mut vector<String>, item: String) {
-        let i = 0;
+        let mut i = 0;
         let len = vector::length(vec);
+        let mut found = false;
         while (i < len) {
             if (*vector::borrow(vec, i) == item) {
-                let _ = vector::remove(vec, i);
-                return
+                found = true;
+                break
             };
             i = i + 1;
+        };
+        if (found) {
+            let _ = vector::remove(vec, i);
         }
     }
 }
