@@ -119,24 +119,24 @@ sui move build
 sui move test
 ```
 
-单元测试位于 `tests/` 目录：
-- `agent_nft_tests.move`：创建/更新/转移 Agent NFT、get_agent_info、is_owner
-- `agent_registry_tests.move`：init_registry、get_registry_stats
-- `reputation_system_tests.move`：create_agent_reputation、add_rating、get_reputation_stats，以及无效评分 (0/11) 的 expected_failure
-- `validation_system_tests.move`：init_stake_pool、create_agent_validation、is_validated
+Unit tests live in `tests/`:
+- `agent_nft_tests.move`: create/update/transfer Agent NFT, get_agent_info, is_owner
+- `agent_registry_tests.move`: init_registry, get_registry_stats
+- `reputation_system_tests.move`: create_agent_reputation, add_rating, get_reputation_stats, and expected_failure for invalid scores (0/11)
+- `validation_system_tests.move`: init_stake_pool, create_agent_validation, is_validated
 
-## EIP-8004 协议演示 (Demo)
+## EIP-8004 Demo
 
-在 `demo/` 目录下提供了基于 TypeScript + Sui SDK 的**简单演示脚本**，用于在 Devnet 上跑通协议流程：初始化注册表与质押池、创建 Agent NFT、创建声誉、添加评分等。
+The `demo/` directory provides a **simple demo** (TypeScript + Sui SDK) to run the protocol flow on Devnet: init registry and stake pool, create Agent NFT, create reputation, add ratings, etc.
 
 ```bash
 cd demo
-cp .env.example .env   # 填写 PACKAGE_ID 等
+cp .env.example .env   # set PACKAGE_ID and optionally REGISTRY_ID, STAKE_POOL_ID
 npm install
 npm run demo
 ```
 
-详见 [demo/README.md](demo/README.md)。
+See [demo/README.md](demo/README.md) for details.
 
 ## Deployment
 
