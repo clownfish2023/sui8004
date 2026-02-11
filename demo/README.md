@@ -1,83 +1,83 @@
-# EIP-8004 Trustless Agents 演示
+# EIP-8004 Trustless Agents Demo
 
-本目录包含一个**简单演示脚本**，用于在 Sui Devnet 上演示 [EIP-8004 Trustless Agents](https://eips.ethereum.org/EIPS/eip-8004) 协议的核心流程。
+This directory contains a **simple demo script** that demonstrates the core flow of the [EIP-8004 Trustless Agents](https://eips.ethereum.org/EIPS/eip-8004) protocol on Sui Devnet.
 
-## 协议要点（EIP-8004）
+## Protocol Overview (EIP-8004)
 
-- **代理注册与发现**：在链上注册 Agent 的元数据、能力与通信端点
-- **信任模型**：声誉、质押/zkML 验证、TEE 证明
-- **Agent NFT**：用 NFT 表示代理所有权（Sui 上为对象模型）
-- **声誉系统**：链上评分与聚合
+- **Agent registration and discovery**: On-chain registration of agent metadata, capabilities, and communication endpoints
+- **Trust model**: Reputation, stake/zkML validation, TEE attestation
+- **Agent NFT**: NFT representing agent ownership (object model on Sui)
+- **Reputation system**: On-chain ratings and aggregation
 
-## 演示流程
+## Demo Flow
 
-脚本会按顺序执行（若未提供已有对象 ID 则自动创建）：
+The script runs the following steps in order (creating objects when IDs are not provided):
 
-| 步骤 | 说明 |
-|------|------|
-| 1 | **init_registry** — 初始化全局注册表（共享对象） |
-| 2 | **init_stake_pool** — 初始化质押池（共享对象） |
-| 3 | **create_agent** — 创建 Agent NFT（名称、描述、图片） |
-| 4 | **register_agent** — 注册 Agent（能力、端点、信任模型）— 当前为占位，完整需 BCS 序列化 |
-| 5 | **create_agent_reputation** — 为 Agent 创建声誉对象 |
-| 6 | **add_rating** — 添加一条评分（1–10 分 + 分类） |
+| Step | Description |
+|------|-------------|
+| 1 | **init_registry** — Initialize the global registry (shared object) |
+| 2 | **init_stake_pool** — Initialize the stake pool (shared object) |
+| 3 | **create_agent** — Create an Agent NFT (name, description, image) |
+| 4 | **register_agent** — Register the agent (capabilities, endpoints, trust model) — Currently a placeholder; full flow requires BCS serialization |
+| 5 | **create_agent_reputation** — Create a reputation object for the agent |
+| 6 | **add_rating** — Add a rating (1–10 score + category) |
 
-## 前置条件
+## Prerequisites
 
-1. **合约已部署到 Devnet**  
-   在项目根目录执行：
+1. **Contract deployed to Devnet**  
+   From the project root:
    ```bash
    sui client switch --env devnet
    sui client faucet
    cd trustless-agents
    sui client test-publish --gas-budget 100000000 --build-env testnet --pubfile-path Pub.devnet.toml
    ```
-   记下 `Pub.devnet.toml` 中的 `published-at`（即 `PACKAGE_ID`）。
+   Note the `published-at` in `Pub.devnet.toml` (this is your `PACKAGE_ID`).
 
 2. **Node.js 18+**  
-   已安装 `node` 与 `npm`。
+   Have `node` and `npm` installed.
 
-## 使用方式
+## Usage
 
 ```bash
 cd demo
 cp .env.example .env
-# 编辑 .env：至少设置 PACKAGE_ID；若已 init 过可填 REGISTRY_ID、STAKE_POOL_ID；可选 DEMO_PRIVATE_KEY
+# Edit .env: set PACKAGE_ID at minimum; optionally REGISTRY_ID, STAKE_POOL_ID if already inited; optional DEMO_PRIVATE_KEY
 npm install
 npm run demo
 ```
 
-- **不填 `DEMO_PRIVATE_KEY`**：脚本会使用随机 keypair；该地址在 devnet 上无 SUI，会报错 "No valid gas coins"。请使用已领取过水龙头的地址私钥（如 `sui keytool export --key-identity <addr>` 后填入），或先 `sui client faucet` 再导出当前 active 地址私钥填入 `.env`。
-- **只检查不执行**：`DRY_RUN=1 npm run demo`（不会发交易，无需 gas）。
+- **Without `DEMO_PRIVATE_KEY`**: The script uses a random keypair; that address has no SUI on devnet and will fail with "No valid gas coins". Use a private key for an address that has received faucet SUI (e.g. export with `sui keytool export --key-identity <addr>` and put in `.env`), or run `sui client faucet` and export the active address’s private key into `.env`.
+- **Dry run (no transactions)**: `DRY_RUN=1 npm run demo` (no gas required).
 
-## 环境变量说明
+## Environment Variables
 
-| 变量 | 说明 |
-|------|------|
-| `NETWORK` | 网络：`devnet` / `testnet` / `mainnet`，默认 `devnet` |
-| `PACKAGE_ID` | 已部署的 trustless_agents 合约 Package ID |
-| `REGISTRY_ID` | 已有 Registry 对象 ID（可选，不填则执行 init_registry） |
-| `STAKE_POOL_ID` | 已有 StakePool 对象 ID（可选，不填则执行 init_stake_pool） |
-| `DEMO_PRIVATE_KEY` | 演示用私钥（可选，不填则随机生成） |
-| `DRY_RUN` | 设为 `1` 时只构建交易不发送 |
+| Variable | Description |
+|----------|-------------|
+| `NETWORK` | Network: `devnet` / `testnet` / `mainnet`; default `devnet` |
+| `PACKAGE_ID` | Deployed trustless_agents package ID |
+| `REGISTRY_ID` | Existing Registry object ID (optional; if unset, init_registry is run) |
+| `STAKE_POOL_ID` | Existing StakePool object ID (optional; if unset, init_stake_pool is run) |
+| `DEMO_PRIVATE_KEY` | Private key for the demo (optional; random keypair if unset) |
+| `DRY_RUN` | Set to `1` to build transactions without sending them |
 
-## 完整 register_agent 与 CLI 示例
+## Full register_agent and CLI Example
 
-`register_agent` 需要传入能力列表、端点列表和信任模型等复杂参数，当前脚本中为占位。完整调用可参考：
+`register_agent` expects complex arguments (capability list, endpoint list, trust model, etc.); the script currently uses a placeholder. For a full call, see:
 
-- 仓库内 **DEPLOYMENT.md** 的 TypeScript/BCS 示例
-- 或使用 Sui CLI 分步调用（需先准备好 capabilities/endpoints 的编码）
+- **DEPLOYMENT.md** in the repo for TypeScript/BCS examples
+- Or use Sui CLI with pre-encoded capabilities/endpoints
 
-例如创建 Agent NFT 后，用 CLI 注册（需将 `<PACKAGE_ID>`、`<REGISTRY_ID>`、`<AGENT_NFT_ID>` 等替换为实际值）：
+Example: after creating an Agent NFT, register via CLI (replace `<PACKAGE_ID>`, `<REGISTRY_ID>`, `<AGENT_NFT_ID>` with real values):
 
 ```bash
-# 创建 Agent NFT 后得到 AGENT_NFT_ID，再使用 SDK 或 CLI 调用 register_agent
+# After creating the Agent NFT you get AGENT_NFT_ID; then call register_agent via SDK or CLI
 sui client call --package <PACKAGE_ID> --module agent_registry --function register_agent \
-  --args <REGISTRY_ID> <AGENT_NFT_ID> ... # 其余参数需按 BCS 构造
+  --args <REGISTRY_ID> <AGENT_NFT_ID> ... # remaining args must be BCS-encoded
 ```
 
-## 相关链接
+## Links
 
 - [EIP-8004: Trustless Agents](https://eips.ethereum.org/EIPS/eip-8004)
 - [Sui TypeScript SDK](https://sdk.mystenlabs.com/sui)
-- 项目根目录 **README.md**、**DEPLOYMENT.md**
+- Project root **README.md**, **DEPLOYMENT.md**
