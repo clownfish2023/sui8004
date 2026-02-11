@@ -39,6 +39,22 @@ The script runs the following steps in order (creating objects when IDs are not 
 
 ## Usage
 
+### Option A: Web app (recommended for showcasing)
+
+A small React UI lets you connect a Sui wallet and run each EIP-8004 step from the browser.
+
+```bash
+cd demo/app
+cp .env.example .env
+# Set VITE_PACKAGE_ID (and optionally VITE_NETWORK) in .env
+npm install
+npm run dev
+```
+
+Open http://localhost:5174, connect your wallet (e.g. Sui Wallet), then run **Init Registry**, **Init Stake Pool**, **Create Agent NFT**, **Create Agent Reputation**, and **Add Rating** as needed. Use Devnet and ensure the wallet has SUI (e.g. from [Sui Faucet](https://faucet.sui.io/)).
+
+### Option B: CLI script
+
 ```bash
 cd demo
 cp .env.example .env
@@ -52,6 +68,8 @@ npm run demo
 
 ## Environment Variables
 
+### CLI script (`demo/`)
+
 | Variable | Description |
 |----------|-------------|
 | `NETWORK` | Network: `devnet` / `testnet` / `mainnet`; default `devnet` |
@@ -60,6 +78,13 @@ npm run demo
 | `STAKE_POOL_ID` | Existing StakePool object ID (optional; if unset, init_stake_pool is run) |
 | `DEMO_PRIVATE_KEY` | Private key for the demo (optional; random keypair if unset) |
 | `DRY_RUN` | Set to `1` to build transactions without sending them |
+
+### Web app (`demo/app/`)
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_PACKAGE_ID` | Deployed trustless_agents package ID (build-time) |
+| `VITE_NETWORK` | `devnet` / `testnet` / `mainnet`; default `devnet` |
 
 ## Full register_agent and CLI Example
 

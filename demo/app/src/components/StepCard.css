@@ -1,0 +1,84 @@
+.step-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem;
+}
+
+.step-card--placeholder {
+  opacity: 0.85;
+}
+
+.step-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.step-card p {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.step-note {
+  font-size: 0.8125rem;
+}
+
+.step-note code {
+  background: var(--bg);
+  padding: 0.15em 0.35em;
+  border-radius: 4px;
+}
+
+.step-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.step-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.step-form label strong,
+.step-form label:first-of-type {
+  color: var(--text);
+}
+
+.step-form input,
+.step-form select {
+  padding: 0.5rem 0.65rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 0.875rem;
+}
+
+.step-form input:focus,
+.step-form select:focus {
+  outline: none;
+  border-color: var(--accent-dim);
+}
+
+.step-form button {
+  align-self: flex-start;
+  margin-top: 0.25rem;
+  padding: 0.5rem 1rem;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.step-form button:hover:not(:disabled) {
+  background: var(--accent-dim);
+}
